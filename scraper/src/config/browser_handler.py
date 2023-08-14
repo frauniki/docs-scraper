@@ -16,7 +16,7 @@ class BrowserHandler:
         return len(results) > 0 or js_render
 
     @staticmethod
-    def init(config_original_content, js_render, user_agent):
+    def init(config_original_content, js_render, user_agent, accept_insecure_certs=False):
         driver = None
 
         if BrowserHandler.conf_need_browser(config_original_content,
@@ -25,6 +25,7 @@ class BrowserHandler:
             chrome_options.add_argument('--no-sandbox')
             chrome_options.add_argument('--headless')
             chrome_options.add_argument(f'user-agent={user_agent}')
+            chrome_options.accept_insecure_certs = accept_insecure_certs
 
             driver = webdriver.Chrome(
                 options=chrome_options)

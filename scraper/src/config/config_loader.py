@@ -9,6 +9,7 @@ from collections import OrderedDict
 import json
 import os
 import copy
+from distutils.util import strtobool
 
 from .version import qualified_version
 from .config_validator import ConfigValidator
@@ -48,6 +49,7 @@ class ConfigLoader:
     user_agent = qualified_version()
     only_content_level = False
     query_rules = []
+    accept_insecure_certs = False
 
     # data storage, starting here attribute are not config params
     config_file = None
@@ -70,16 +72,17 @@ class ConfigLoader:
         for key, value in list(data.items()):
             setattr(self, key, value)
 
+        # Modify
+        self._parse()
+
         # Start browser if needed
         self.driver = BrowserHandler.init(self.config_original_content,
                                           self.js_render,
-                                          self.user_agent)
+                                          self.user_agent,
+                                          self.accept_insecure_certs)
 
         # Validate
         ConfigValidator(self).validate()
-
-        # Modify
-        self._parse()
 
         # Stop browser if needed
         if not self.js_render:
@@ -107,6 +110,7 @@ class ConfigLoader:
         # Parse Env
         self.app_id = os.environ.get('MEILISEARCH_HOST_URL', None)
         self.api_key = os.environ.get('MEILISEARCH_API_KEY', None)
+        self.accept_insecure_certs = bool(strtobool(os.environ.get('ACCEPT_INSECURE_CERTS', '')))
 
         if self.index_uid_tmp is None:
             self.index_uid_tmp = os.environ.get('index_uid_TMP', self.index_uid + '_tmp')
